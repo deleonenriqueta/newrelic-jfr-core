@@ -50,10 +50,14 @@ public class SetupUtils {
             .put(AttributeNames.INSTRUMENTATION_PROVIDER, "JFR-Uploader")
             .put(AttributeNames.COLLECTOR_NAME, "JFR-Uploader");
     String hostname;
-    try {
-      hostname = InetAddress.getLocalHost().toString();
-    } catch (Throwable e) {
-      hostname = InetAddress.getLoopbackAddress().toString();
+    if (config.getHostname() == null) {
+      try {
+        hostname = InetAddress.getLocalHost().getHostName();
+      } catch (Exception e) {
+        hostname = InetAddress.getLoopbackAddress().toString();
+      }
+    } else {
+      hostname = config.getHostname();
     }
     attributes.put(AttributeNames.HOSTNAME, hostname);
     attributes.put(AttributeNames.APP_NAME, config.getMonitoredAppName());
@@ -92,6 +96,7 @@ public class SetupUtils {
     builder.maybeEnv(EnvironmentVars.THREAD_NAME_PATTERN, identity(), builder::threadNamePattern);
     builder.maybeEnv(EnvironmentVars.HARVEST_INTERVAL, Integer::parseInt, builder::harvestInterval);
     builder.maybeEnv(EnvironmentVars.QUEUE_SIZE, Integer::parseInt, builder::queueSize);
+    builder.maybeEnv(EnvironmentVars.HOSTNAME, String::toString, builder::hostname);
 
     return builder.build();
   }
